@@ -100,6 +100,77 @@ describe("CsvTransactionReader", () => {
         ]);
     });
 
+    test("rejects a transaction with an invalid date", () => {
+        const csv = [
+            "Date,From,To,Narrative,Amount",
+            "32/01/2014,Jon A,Sarah T,Lunch,7.8"
+        ].join("\n");
+
+        const reader = new CsvTransactionReader();
+
+        expect(() => reader.parse(csv)).toThrow("Invalid date");
+    });
+
+    test.each([
+        ["non-numeric", "not-a-number"],
+        ["empty", ""],
+        ["negative", "-5"],
+        ["infinite", "Infinity"]
+    ])("rejects a transaction with a %s amount", (_description, amount) => {
+        const csv = [
+            "Date,From,To,Narrative,Amount",
+            `01/01/2014,Jon A,Sarah T,Lunch,${amount}`
+        ].join("\n");
+
+        const reader = new CsvTransactionReader();
+
+        expect(() => reader.parse(csv)).toThrow("Invalid amount");
+    });
+
+    test.each([
+        {
+            role: "sender",
+            from: "",
+            to: "Sarah T",
+            expectedError: "Invalid sender"
+        },
+        {
+            role: "recipient",
+            from: "Jon A",
+            to: "",
+            expectedError: "Invalid recipient"
+        }
+    ])(
+        "rejects a transaction with an empty $role",
+        ({ from, to, expectedError }) => {
+            const csv = [
+                "Date,From,To,Narrative,Amount",
+                `01/01/2014,${from},${to},Lunch,7.8`
+            ].join("\n");
+
+            const reader = new CsvTransactionReader();
+
+            expect(() => reader.parse(csv)).toThrow(expectedError);
+        }
+    );
+
+    test.each([
+        ["empty", ""],
+        ["whitespace-only", "   "]
+    ])(
+        "rejects a transaction with a %s narrative",
+        (_description, narrative) => {
+            const csv = [
+                "Date,From,To,Narrative,Amount",
+                `01/01/2014,Jon A,Sarah T,${narrative},7.8`
+            ].join("\n");
+
+            const reader = new CsvTransactionReader();
+
+            expect(() => reader.parse(csv)).toThrow("Invalid narrative");
+        }
+    );
+
     test("returns no transactions when the CSV only contains headers", () => {
         const csv = "Date,From,To,Narrative,Amount";
 
