@@ -15,7 +15,7 @@ export class Account {
         const isSender = transaction.from === this.name;
         const isRecipient = transaction.to === this.name;
 
-        if ((!isSender && !isRecipient) || (isSender && isRecipient)) {
+        if (!isSender && !isRecipient) {
             return;
         }
 

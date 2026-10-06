@@ -51,22 +51,6 @@ test("does not add a transaction unrelated to the account", () => {
     expect(account.getBalance()).toBe(0);
 });
 
-test("does not add a self-transfer", () => {
-    const account = new Account("Jon A");
-    const transaction = new Transaction(
-        new Date(2014, 0, 1),
-        "Jon A",
-        "Jon A",
-        "Correction",
-        10
-    );
-
-    account.addTransaction(transaction);
-
-    expect(account.getTransactions()).toHaveLength(0);
-    expect(account.getBalance()).toBe(0);
-});
-
 test("updates the balance for multiple transactions", () => {
     const account = new Account("Jon A");
 

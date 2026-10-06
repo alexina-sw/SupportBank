@@ -6,6 +6,10 @@ export class Transaction {
     readonly amount: number;
 
     constructor(date: Date, from: string, to: string, narrative: string, amount: number) {
+        if (from === to) {
+            throw new Error("Transaction sender and recipient must be different");
+        }
+        
         this.date = date;
         this.from = from;
         this.to = to;
