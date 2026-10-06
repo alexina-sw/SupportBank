@@ -21,12 +21,14 @@
   "homepage": "https://github.com/alexina-sw/SupportBank#readme",
   "devDependencies": {
     "@types/node": "^26.6.4",
+    "@types/readline-sync": "^1.4.8",
     "@vitest/coverage-v8": "^5.0.3",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"
   },
   "dependencies": {
     "csv-parse": "^7.0.3",
-    "date-fns": "^4.4.0"
+    "date-fns": "^4.4.0",
+    "readline-sync": "^1.4.10"
   }
 }

@@ -49,4 +49,20 @@ export class CommandProcessor {
                 ].join(" | ");
             }).join("\n");
     }
+
+    process(command: string): string {
+        const trimmedCommand = command.trim();
+
+        if (/^list\s+all$/i.test(trimmedCommand)) {
+            return this.listAll();
+        }
+
+        const accountName = /^list\s+(.+)$/i.exec(trimmedCommand)?.[1];
+
+        if (accountName) {
+            return this.listAccount(accountName.trim());
+        }
+
+        return 'Invalid command. Use "List All" or "List <account>".';
+    }
 }
