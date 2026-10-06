@@ -32,7 +32,7 @@ export class CsvTransactionReader {
         return this.parse(csvText);
     }
 
-    private createTransaction(row: CsvTransactionRow, rowNumber: number) {
+    private createTransaction(row: CsvTransactionRow, rowNumber: number): Transaction {
         const date = parseDate(row.Date, "dd/MM/yyyy", new Date());
         const amount = Number(row.Amount);
     
