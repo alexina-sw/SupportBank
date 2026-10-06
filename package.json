@@ -1,11 +1,13 @@
 {
   "name": "supportbank",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsc && node dist/index.js"
+    "build": "tsc",
+    "test": "vitest run --coverage",
+    "start": "npm run build && node dist/index.js"
   },
   "repository": {
     "type": "git",
@@ -19,6 +21,8 @@
   "homepage": "https://github.com/alexina-sw/SupportBank#readme",
   "devDependencies": {
     "@types/node": "^26.6.4",
-    "typescript": "^7.0.2"
+    "@vitest/coverage-v8": "^5.0.3",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
   }
 }
