@@ -6,6 +6,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix",
     "test": "vitest run --coverage",
     "start": "npm run build && node dist/index.js"
   },
@@ -20,10 +22,14 @@
   },
   "homepage": "https://github.com/alexina-sw/SupportBank#readme",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.4",
     "@types/readline-sync": "^1.4.8",
     "@vitest/coverage-v8": "^5.0.3",
-    "typescript": "^7.0.2",
+    "eslint": "^10.12.0",
+    "globals": "^17.13.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.1",
     "vitest": "^5.0.3"
   },
   "dependencies": {
