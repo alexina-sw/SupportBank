@@ -1,9 +1,10 @@
 import { readFileSync } from "node:fs";
 
-import { parse as parseCsv } from "csv-parse/sync";
+import { parse as parseCsv, type InfoRecord } from "csv-parse/sync";
 import { isValid, parse as parseDate } from "date-fns";
 
 import { Transaction } from "../modules/Transaction.js";
+import { CsvImportValidationError } from "./CsvTransactionReaderErrors.js";
 
 interface CsvTransactionRow {
     Date: string;
@@ -12,18 +13,41 @@ interface CsvTransactionRow {
     Narrative: string;
     Amount: string;
 }
+ 
+export interface CsvImportValidationIssue {
+    readonly line: number;
+    readonly field: string;
+    readonly message: string;
+}
+
+interface ParsedCsvTransactionRow {
+    readonly record: CsvTransactionRow;
+    readonly info: InfoRecord;
+}
 
 export class CsvTransactionReader {
     parse(csvText: string): Transaction[] {
-        const rows: CsvTransactionRow[] = parseCsv(csvText, {
+        const rows = parseCsv<
+            ParsedCsvTransactionRow,
+            CsvTransactionRow
+        >(csvText, {
             columns: true,
+            info: true,
             skip_empty_lines: true,
             trim: true
         });
 
-        return rows.map((row, index) => {
-            return this.createTransaction(row, index + 2);
-        });
+        const issues = rows.flatMap(({ record, info }) =>
+            this.validateRow(record, info.lines)
+        );
+
+        if (issues.length > 0) {
+            throw new CsvImportValidationError(issues);
+        }
+
+        return rows.map(({ record }) => 
+            this.createTransaction(record)
+        );
     }
 
     read(filePath: string): Transaction[] {
@@ -32,36 +56,66 @@ export class CsvTransactionReader {
         return this.parse(csvText);
     }
 
-    private createTransaction(row: CsvTransactionRow, rowNumber: number): Transaction {
+    private createTransaction(row: CsvTransactionRow): Transaction {
         const date = parseDate(row.Date, "dd/MM/yyyy", new Date());
         const amount = Number(row.Amount);
-    
-        this.validateRow(row, date, amount, rowNumber);
-    
+        
         return new Transaction(date, row.From, row.To, row.Narrative, amount);
     }
 
-    private validateRow(row: CsvTransactionRow, date: Date, amount: number, rowNumber: number): void {
+    private validateRow(row: CsvTransactionRow, rowNumber: number): CsvImportValidationIssue[] {
+        const issues: CsvImportValidationIssue[] = [];
+        const date = parseDate(row.Date, "dd/MM/yyyy", new Date());
+        const amount = Number(row.Amount);
+
         if (!row.From) {
-            throw new Error(`Invalid sender at row ${rowNumber}`);
+            issues.push({
+                line: rowNumber,
+                field: "From",
+                message: "Sender is required"
+            });
         }
 
         if (!row.To) {
-            throw new Error(`Invalid recipient at row ${rowNumber}`);
+            issues.push({
+                line: rowNumber,
+                field: "To",
+                message: "Recipient is required"
+            });
+        }
+
+        if (row.From && row.To && row.From === row.To) {
+            issues.push({
+                line: rowNumber,
+                field: "From/To",
+                message: "Sender and recipient must be different"
+            });
         }
 
         if (!row.Narrative) {
-            throw new Error(`Invalid narrative at row ${rowNumber}`);
+            issues.push({
+                line: rowNumber,
+                field: "Narrative",
+                message: "Narrative is required"
+            });
         }
 
         if (!isValid(date)) {
-            throw new Error(`Invalid date ${row.Date} at row ${rowNumber}`);
+            issues.push({
+                line: rowNumber,
+                field: "Date",
+                message: `"${row.Date}" is not a valid date`
+            });
         }
 
         if (row.Amount === "" || !Number.isFinite(amount) || amount < 0) {
-            throw new Error(
-                `Invalid amount ${row.Amount} at row ${rowNumber}`
-            );
+            issues.push({
+                line: rowNumber,
+                field: "Amount",
+                message: `"${row.Amount}" is not a valid amount`
+            });
         }
+
+        return issues;
     }
 }
