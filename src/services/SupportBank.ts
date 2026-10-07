@@ -8,17 +8,17 @@ export class SupportBank {
         this.accounts = new Map();
     }
 
-    addTransaction(transaction: Transaction): void {
+    recordTransaction(transaction: Transaction): void {
         const sender = this.getAccount(transaction.from) ?? this.createAccount(transaction.from);
         const recipient = this.getAccount(transaction.to) ?? this.createAccount(transaction.to);
 
-        sender.addTransaction(transaction);
-        recipient.addTransaction(transaction);
+        sender.applyTransaction(transaction);
+        recipient.applyTransaction(transaction);
     }
 
-    addTransactions(transactions: readonly Transaction[]): void {
+    recordTransactions(transactions: readonly Transaction[]): void {
         for (const transaction of transactions) {
-            this.addTransaction(transaction);
+            this.recordTransaction(transaction);
         }
     }
 

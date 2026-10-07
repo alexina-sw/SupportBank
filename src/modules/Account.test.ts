@@ -1,51 +1,53 @@
-import { expect, test } from "vitest";
+import { expect, test as baseTest } from "vitest";
 
 import { Account } from "./Account.js";
 import { Transaction } from "./Transaction.js";
 
-test("subtracts money sent by the account", () => {
-    const account = new Account("Jon A");
-    const transaction = new Transaction(
+const test = baseTest.extend(
+    "pokemonTransaction",
+    new Transaction(
         new Date(2014, 0, 1),
         "Jon A",
         "Sarah T",
         "Pokemon Training",
         7.8
-    );
+    )
+);
 
-    account.addTransaction(transaction);
+test("formats an account as text",
+    ({ pokemonTransaction }) => {
+    const account = new Account("Jon A");
 
-    expect(account.getTransactions()).toEqual([transaction]);
+    account.applyTransaction(pokemonTransaction);
+
+    expect(account.toString()).toBe("Jon A: -7.80");
+});
+
+test("subtracts money sent by the account",
+    ({ pokemonTransaction }) => {
+    const account = new Account("Jon A");
+
+    account.applyTransaction(pokemonTransaction);
+
+    expect(account.getTransactions()).toEqual([pokemonTransaction]);
     expect(account.getBalance()).toBe(-7.8);
 });
 
-test("adds money received by the account", () => {
+test("adds money received by the account",
+    ({ pokemonTransaction }) => {
     const account = new Account("Sarah T");
-    const transaction = new Transaction(
-        new Date(2014, 0, 1),
-        "Jon A",
-        "Sarah T",
-        "Pokemon Training",
-        7.8
-    );
 
-    account.addTransaction(transaction);
+    account.applyTransaction(pokemonTransaction);
 
-    expect(account.getTransactions()).toEqual([transaction]);
+    expect(account.getTransactions()).toEqual([pokemonTransaction]);
     expect(account.getBalance()).toBe(7.8);
 });
 
-test("does not add a transaction unrelated to the account", () => {
+test("does not add a transaction unrelated to the account",
+    ({ pokemonTransaction }) => {
     const account = new Account("Todd");
-    const transaction = new Transaction(
-        new Date(2014, 0, 1),
-        "Jon A",
-        "Sarah T",
-        "Pokemon Training",
-        7.8
-    );
 
-    account.addTransaction(transaction);
+    account.applyTransaction(pokemonTransaction);
 
     expect(account.getTransactions()).toHaveLength(0);
     expect(account.getBalance()).toBe(0);
@@ -70,8 +72,8 @@ test("updates the balance for multiple transactions", () => {
         4
     );
 
-    account.addTransaction(outgoing);
-    account.addTransaction(incoming);
+    account.applyTransaction(outgoing);
+    account.applyTransaction(incoming);
 
     expect(account.getTransactions()).toEqual([outgoing, incoming]);
     expect(account.getBalance()).toBe(-6);

@@ -9,7 +9,7 @@ function main(): void {
     const transactions = reader.read("Transactions2014.csv");
 
     const bank = new SupportBank();
-    bank.addTransactions(transactions);
+    bank.recordTransactions(transactions);
 
     const processor = new CommandProcessor(bank);
 

@@ -1,53 +1,60 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test as baseTest } from "vitest";
 
 import { Transaction } from "../modules/Transaction.js";
 import { SupportBank } from "./SupportBank.js";
 
-describe("SupportBank", () => {
-    test("starts with no accounts", () => {
-        const bank = new SupportBank();
-
-        expect(bank.getAccounts()).toEqual([]);
-        expect(bank.getAccount("Jon A")).toBeUndefined();
-    });
-
-    test("creates accounts and adds a transaction to both", () => {
-        const bank = new SupportBank();
-        const transaction = new Transaction(
+const test = baseTest
+    .extend("bank", () => new SupportBank())
+    .extend(
+        "lunchTransaction",
+        new Transaction(
             new Date(2014, 0, 1),
             "Jon A",
             "Sarah T",
             "Lunch",
             10
-        );
+        )
+    )
+    .extend(
+        "drinksTransaction",
+        new Transaction(
+            new Date(2014, 0, 2),
+            "Sarah T",
+            "Todd",
+            "Drinks",
+            4
+        )
+    );
 
-        bank.addTransaction(transaction);
-
-        const jon = bank.getAccount("Jon A");
-        const sarah = bank.getAccount("Sarah T");
-
-        expect(jon).toBeDefined();
-        expect(sarah).toBeDefined();
-
-        expect(jon?.getTransactions()).toEqual([transaction]);
-        expect(sarah?.getTransactions()).toEqual([transaction]);
-
-        expect(jon?.getBalance()).toBe(-10);
-        expect(sarah?.getBalance()).toBe(10);
+describe("SupportBank", () => {
+    test("starts with no accounts", ({ bank }) => {
+        expect(bank.getAccounts()).toEqual([]);
+        expect(bank.getAccount("Jon A")).toBeUndefined();
     });
 
-    test("returns all created accounts", () => {
-        const bank = new SupportBank();
+    test(
+        "creates accounts and records a transaction for both",
+        ({ bank, lunchTransaction }) => {
+            bank.recordTransaction(lunchTransaction);
 
-        bank.addTransaction(
-            new Transaction(
-                new Date(2014, 0, 1),
-                "Jon A",
-                "Sarah T",
-                "Lunch",
-                10
-            )
-        );
+            const jon = bank.getAccount("Jon A");
+            const sarah = bank.getAccount("Sarah T");
+
+            expect(jon?.getTransactions()).toEqual([
+                lunchTransaction
+            ]);
+            expect(sarah?.getTransactions()).toEqual([
+                lunchTransaction
+            ]);
+
+            expect(jon?.getBalance()).toBe(-10);
+            expect(sarah?.getBalance()).toBe(10);
+        }
+    );
+
+    test("returns all created accounts",
+        ({ bank, lunchTransaction }) => {
+        bank.recordTransaction(lunchTransaction);
 
         const names = bank
             .getAccounts()
@@ -57,39 +64,30 @@ describe("SupportBank", () => {
         expect(names).toEqual(["Jon A", "Sarah T"]);
     });
 
-    test("reuses existing accounts when adding multiple transactions", () => {
-        const bank = new SupportBank();
+    test(
+        "reuses existing accounts when recording multiple transactions",
+        ({
+            bank,
+            lunchTransaction,
+            drinksTransaction
+        }) => {
+            bank.recordTransactions([
+                lunchTransaction,
+                drinksTransaction
+            ]);
 
-        const firstTransaction = new Transaction(
-            new Date(2014, 0, 1),
-            "Jon A",
-            "Sarah T",
-            "Lunch",
-            10
-        );
+            expect(bank.getAccounts()).toHaveLength(3);
 
-        const secondTransaction = new Transaction(
-            new Date(2014, 0, 2),
-            "Sarah T",
-            "Todd",
-            "Drinks",
-            4
-        );
+            expect(
+                bank.getAccount("Sarah T")?.getTransactions()
+            ).toEqual([
+                lunchTransaction,
+                drinksTransaction
+            ]);
 
-        bank.addTransactions([
-            firstTransaction,
-            secondTransaction
-        ]);
-
-        expect(bank.getAccounts()).toHaveLength(3);
-
-        const sarah = bank.getAccount("Sarah T");
-
-        expect(sarah?.getTransactions()).toEqual([
-            firstTransaction,
-            secondTransaction
-        ]);
-
-        expect(sarah?.getBalance()).toBe(6);
-    });
+            expect(
+                bank.getAccount("Sarah T")?.getBalance()
+            ).toBe(6);
+        }
+    );
 });

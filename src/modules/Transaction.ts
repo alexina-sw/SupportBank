@@ -1,3 +1,5 @@
+import { format } from "date-fns";
+
 export class Transaction {
     readonly date: Date;
     readonly from: string;
@@ -15,5 +17,16 @@ export class Transaction {
         this.to = to;
         this.narrative = narrative;
         this.amount = amount;
+    }
+
+    toString(): string {
+        const date = format(this.date, "dd/MM/yyyy");
+
+        return [
+            date,
+            `${this.from} -> ${this.to}`,
+            this.narrative,
+            this.amount
+        ].join(" | ");
     }
 }

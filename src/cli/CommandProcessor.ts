@@ -1,5 +1,3 @@
-import { format as formatDate } from "date-fns";
-
 import type { SupportBank } from "../services/SupportBank.js";
 
 export class CommandProcessor {
@@ -20,11 +18,7 @@ export class CommandProcessor {
             first.name.localeCompare(second.name)
         );
 
-        return accounts
-            .map((account) => {
-                const balance = account.getBalance();
-                return `${account.name}: ${balance}`;
-            }).join("\n");
+        return accounts.join("\n");
     }
 
     listAccount(name: string): string {
@@ -34,20 +28,7 @@ export class CommandProcessor {
             return `Account "${name}" not found.`;
         }
 
-        return account
-            .getTransactions()
-            .map((transaction) => {
-                const date = formatDate(transaction.date, "dd/MM/yyyy");
-
-                const amount = transaction.amount;
-
-                return [
-                    date,
-                    `${transaction.from} -> ${transaction.to}`,
-                    transaction.narrative,
-                    amount
-                ].join(" | ");
-            }).join("\n");
+        return account.getTransactions().join("\n");
     }
 
     process(command: string): string {

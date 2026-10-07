@@ -11,7 +11,11 @@ export class Account {
         this.balance = 0;
     }
 
-    addTransaction(transaction: Transaction): void {
+    toString(): string {
+        return `${this.name}: ${this.balance.toFixed(2)}`;
+    }
+
+    applyTransaction(transaction: Transaction): void {
         const isSender = transaction.from === this.name;
         const isRecipient = transaction.to === this.name;
 
