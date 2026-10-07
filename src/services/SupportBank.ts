@@ -9,8 +9,8 @@ export class SupportBank {
     }
 
     recordTransaction(transaction: Transaction): void {
-        const sender = this.getAccount(transaction.from) ?? this.createAccount(transaction.from);
-        const recipient = this.getAccount(transaction.to) ?? this.createAccount(transaction.to);
+        const sender = this.getAccount(transaction.from);
+        const recipient = this.getAccount(transaction.to);
 
         sender.applyTransaction(transaction);
         recipient.applyTransaction(transaction);
@@ -22,8 +22,12 @@ export class SupportBank {
         }
     }
 
-    getAccount(name: string): Account | undefined {
+    findAccount(name: string): Account | undefined {
         return this.accounts.get(name);
+    }
+
+    getAccount(name: string): Account {
+        return this.accounts.get(name) ?? this.createAccount(name);
     }
 
     getAccounts(): readonly Account[] {

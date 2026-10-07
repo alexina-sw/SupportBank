@@ -22,7 +22,7 @@ export class CommandProcessor {
     }
 
     listAccount(name: string): string {
-        const account = this.bank.getAccount(name);
+        const account = this.bank.findAccount(name);
 
         if (!account) {
             return `Account "${name}" not found.`;
