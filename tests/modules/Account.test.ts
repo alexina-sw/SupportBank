@@ -1,7 +1,7 @@
 import { expect, test as baseTest } from "vitest";
 
-import { Account } from "./Account.js";
-import { Transaction } from "./Transaction.js";
+import { Account } from "../../src/modules/Account.js";
+import { Transaction } from "../../src/modules/Transaction.js";
 
 const test = baseTest.extend(
     "pokemonTransaction",

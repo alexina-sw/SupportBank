@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-import { Transaction } from "./Transaction.js";
+import { Transaction } from "../../src/modules/Transaction.js";
 
 test("formats a transaction as text", () => {
     const transaction = new Transaction(

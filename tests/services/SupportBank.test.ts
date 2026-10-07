@@ -1,7 +1,7 @@
 import { describe, expect, test as baseTest } from "vitest";
 
-import { Transaction } from "../modules/Transaction.js";
-import { SupportBank } from "./SupportBank.js";
+import { Transaction } from "../../src/modules/Transaction.js";
+import { SupportBank } from "../../src/services/SupportBank.js";
 
 const test = baseTest
     .extend("bank", () => new SupportBank())
