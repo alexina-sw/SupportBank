@@ -3,8 +3,8 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, test as baseTest } from "vitest";
 
 import { Transaction } from "../../src/modules/Transaction.js";
-import { CsvTransactionReader } from "../../src/services/CsvTransactionReader.js";
-import { TransactionImportValidationError } from "../../src/services/TransactionImportValidationError.js";
+import { CsvTransactionReader } from "../../src/services/import/readers/CsvTransactionReader.js";
+import { TransactionImportValidationError } from "../../src/services/import/validation/TransactionImportValidationError.js";
 
 const CSV_HEADER = "Date,From,To,Narrative,Amount";
 

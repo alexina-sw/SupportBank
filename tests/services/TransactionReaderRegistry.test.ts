@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
 
-import { CsvTransactionReader } from "../../src/services/CsvTransactionReader.js";
-import { JsonTransactionReader } from "../../src/services/JsonTransactionReader.js";
-import { createTransactionReader } from "../../src/services/TransactionReaderFactory.js";
-import { XmlTransactionReader } from "../../src/services/XmlTransactionReader.js";
+import { createTransactionReader } from "../../src/services/import/TransactionReaderRegistry.js";
+import { CsvTransactionReader } from "../../src/services/import/readers/CsvTransactionReader.js";
+import { JsonTransactionReader } from "../../src/services/import/readers/JsonTransactionReader.js";
+import { XmlTransactionReader } from "../../src/services/import/readers/XmlTransactionReader.js";
 
 describe("createTransactionReader", () => {
     test("creates a CSV reader", () => {

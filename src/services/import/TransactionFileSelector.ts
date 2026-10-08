@@ -1,16 +1,8 @@
 import { existsSync, readdirSync, statSync } from "node:fs";
-import { basename, extname, isAbsolute, join } from "node:path";
+import { basename, isAbsolute, join } from "node:path";
 
-import type { ImportSelection } from "../cli/ImportPrompt.js";
-
-const SUPPORTED_EXTENSIONS = new Set([
-    ".csv",
-    ".json",
-    ".xml"
-]);
-
-const isSupportedFile = (filename: string): boolean =>
-    SUPPORTED_EXTENSIONS.has(extname(filename).toLowerCase());
+import type { ImportSelection } from "../../cli/ImportPrompt.js";
+import { isSupportedTransactionFile } from "./TransactionReaderRegistry.js";
 
 export interface TransactionFile {
     readonly filename: string;
@@ -24,7 +16,7 @@ export function selectTransactionFiles(directory: string, selection: ImportSelec
         })
             .filter((entry) =>
                 entry.isFile() &&
-                isSupportedFile(entry.name)
+                isSupportedTransactionFile(entry.name)
             )
             .map((entry) => ({
                 filename: entry.name,
@@ -42,7 +34,7 @@ export function selectTransactionFiles(directory: string, selection: ImportSelec
         isAbsolute(selection.filename) ||
         /[\\/]/.test(selection.filename) ||
         basename(selection.filename) !== selection.filename ||
-        !isSupportedFile(selection.filename)
+        !isSupportedTransactionFile(selection.filename)
     ) {
         throw new Error(`"${selection.filename}" is not a valid transaction filename.`);
     }

@@ -1,6 +1,6 @@
 import { isValid } from "date-fns";
 
-import { Transaction } from "../modules/Transaction.js";
+import { Transaction } from "../../../modules/Transaction.js";
 import {
     TransactionImportValidationError,
     type TransactionImportValidationIssue

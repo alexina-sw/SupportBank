@@ -3,8 +3,8 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, test as baseTest } from "vitest";
 
 import { Transaction } from "../../src/modules/Transaction.js";
-import { TransactionImportValidationError } from "../../src/services/TransactionImportValidationError.js";
-import { XmlTransactionReader } from "../../src/services/XmlTransactionReader.js";
+import { XmlTransactionReader } from "../../src/services/import/readers/XmlTransactionReader.js";
+import { TransactionImportValidationError } from "../../src/services/import/validation/TransactionImportValidationError.js";
 
 const captureError = (action: () => unknown): unknown => {
     try {

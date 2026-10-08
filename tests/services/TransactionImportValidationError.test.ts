@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-import { TransactionImportValidationError } from "../../src/services/TransactionImportValidationError.js";
+import { TransactionImportValidationError } from "../../src/services/import/validation/TransactionImportValidationError.js";
 
 test("formats a transaction validation issue", () => {
     const issues = [{

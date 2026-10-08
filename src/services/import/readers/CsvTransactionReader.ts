@@ -1,11 +1,8 @@
-import { readFileSync } from "node:fs";
-
 import { parse as parseCsv, type InfoRecord } from "csv-parse/sync";
 import { parse as parseDate } from "date-fns";
 
-import { Transaction } from "../modules/Transaction.js";
-import type { TransactionReader } from "./TransactionReader.js";
-import { TransactionValidator, type TransactionInput } from "./TransactionValidator.js";
+import type { TransactionInput } from "../validation/TransactionValidator.js";
+import { BaseTransactionReader } from "./BaseTransactionReader.js";
 
 interface CsvTransactionRow {
     Date: string;
@@ -20,10 +17,8 @@ interface ParsedCsvTransactionRow {
     readonly info: InfoRecord;
 }
 
-export class CsvTransactionReader implements TransactionReader {
-    private readonly validator = new TransactionValidator();
-
-    parse(csvText: string): Transaction[] {
+export class CsvTransactionReader extends BaseTransactionReader {
+    protected parseInputs(csvText: string): TransactionInput[] {
         const rows = parseCsv<
             ParsedCsvTransactionRow,
             CsvTransactionRow
@@ -34,17 +29,9 @@ export class CsvTransactionReader implements TransactionReader {
             trim: true
         });
 
-        const inputs = rows.map(({ record, info }) =>
+        return rows.map(({ record, info }) =>
             this.createInput(record, info.lines)
         );
-
-        return this.validator.createTransactions(inputs);
-    }
-
-    read(filePath: string): Transaction[] {
-        const csvText = readFileSync(filePath, "utf8");
-
-        return this.parse(csvText);
     }
 
     private createInput(row: CsvTransactionRow, rowNumber: number): TransactionInput {

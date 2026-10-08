@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
 
 import { Transaction } from "../../src/modules/Transaction.js";
-import { TransactionImportValidationError } from "../../src/services/TransactionImportValidationError.js";
-import { TransactionValidator, type TransactionInput } from "../../src/services/TransactionValidator.js";
+import { TransactionImportValidationError } from "../../src/services/import/validation/TransactionImportValidationError.js";
+import { TransactionValidator, type TransactionInput } from "../../src/services/import/validation/TransactionValidator.js";
 
 const validator = new TransactionValidator();
 

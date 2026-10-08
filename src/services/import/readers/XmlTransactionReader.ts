@@ -1,10 +1,8 @@
-import { readFileSync } from "node:fs";
-
 import { XMLParser, XMLValidator } from "fast-xml-parser";
 
-import { Transaction } from "../modules/Transaction.js";
-import type { TransactionReader } from "./TransactionReader.js";
-import { TransactionValidator, type TransactionInput } from "./TransactionValidator.js";
+import type { TransactionInput } from "../validation/TransactionValidator.js";
+import { BaseTransactionReader } from "./BaseTransactionReader.js";
+import { asText } from "./TransactionValueParser.js";
 
 interface XmlTransaction {
     readonly "@_Date"?: string;
@@ -29,17 +27,10 @@ const parser = new XMLParser({
     trimValues: true
 });
 
-const asText = (value: unknown): string =>
-    typeof value === "string"
-        ? value.trim()
-        : "";
-
 const excelDateToDate = (serial: number): Date => new Date(1899, 11, 30 + serial);
 
-export class XmlTransactionReader implements TransactionReader {
-    private readonly validator = new TransactionValidator();
-
-    parse(xmlText: string): Transaction[] {
+export class XmlTransactionReader extends BaseTransactionReader {
+    protected parseInputs(xmlText: string): TransactionInput[] {
         const validationResult = XMLValidator.validate(xmlText);
 
         if (validationResult !== true) {
@@ -71,15 +62,9 @@ export class XmlTransactionReader implements TransactionReader {
             ? parsedTransactions
             : [parsedTransactions];
 
-        const inputs = transactions.map((transaction, index) =>
+        return transactions.map((transaction, index) =>
             this.createInput(transaction, index)
         );
-
-        return this.validator.createTransactions(inputs);
-    }
-
-    read(filePath: string): Transaction[] {
-        return this.parse(readFileSync(filePath, "utf8"));
     }
 
     private createInput(transaction: XmlTransaction, index: number): TransactionInput {

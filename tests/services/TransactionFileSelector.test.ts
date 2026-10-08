@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { selectTransactionFiles } from "../../src/services/TransactionFileSelector.js";
+import { selectTransactionFiles } from "../../src/services/import/TransactionFileSelector.js";
 
 const TRANSACTION_DIRECTORY = "tests/fixtures/transaction-files";
 

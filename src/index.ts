@@ -4,10 +4,10 @@ import { fileURLToPath } from "node:url";
 import { CommandProcessor } from "./cli/CommandProcessor.js";
 import { promptForImport } from "./cli/ImportPrompt.js";
 import { getLogger } from "./logger.js";
-import { TransactionImportValidationError } from "./services/TransactionImportValidationError.js";
-import { createTransactionReader } from "./services/TransactionReaderFactory.js";
 import { SupportBank } from "./services/SupportBank.js";
-import { selectTransactionFiles, type TransactionFile } from "./services/TransactionFileSelector.js";
+import { TransactionImporter } from "./services/import/TransactionImporter.js";
+import { selectTransactionFiles, type TransactionFile } from "./services/import/TransactionFileSelector.js";
+import { TransactionImportValidationError } from "./services/import/validation/TransactionImportValidationError.js";
 
 const logger = getLogger("index");
 
@@ -79,20 +79,18 @@ function main(): void {
 
     const transactionFiles = getTransactionFilesFromPrompt();
     const bank = new SupportBank();
+    const importer = new TransactionImporter(bank);
 
     for (const file of transactionFiles) {
         logger.info(`Import started: file=${file.filename}`);
 
         try {
-            const reader = createTransactionReader(file.filename);
-            const transactions = reader.read(file.path);
+            const result = importer.import(file);
 
-            bank.recordTransactions(transactions);
-
-            console.log(`${file.filename} was imported successfully (${transactions.length} transactions).`);
+            console.log(`${result.filename} was imported successfully (${result.importedCount} transactions).`);
             console.log("");
 
-            logger.info(`Import completed: file=${file.filename} imported=${transactions.length}`);
+            logger.info(`Import completed: file=${result.filename} imported=${result.importedCount}`);
         } catch (error) {
             handleImportFailure(error, file.filename);
         }
