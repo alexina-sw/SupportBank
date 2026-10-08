@@ -72,8 +72,7 @@ describe("TransactionValidator", () => {
             field: "Narrative",
             message: "Narrative is required"
         }
-    ])(
-        "rejects an empty $description",
+    ])("rejects an empty $description",
         ({ changes, field, message }) => {
             const error = captureValidationError([createInput(changes)]);
 
@@ -134,8 +133,7 @@ describe("TransactionValidator", () => {
             amount: Number.POSITIVE_INFINITY,
             amountText: "Infinity"
         }
-    ])(
-        "rejects a $description amount",
+    ])("rejects a $description amount",
         ({ amount, amountText }) => {
             const error = captureValidationError([
                 createInput({
@@ -154,8 +152,7 @@ describe("TransactionValidator", () => {
         }
     );
 
-    test(
-        "reports every issue and rejects the batch",
+    test("reports every issue and rejects the batch",
         () => {
             const error = captureValidationError([
                 createInput(),

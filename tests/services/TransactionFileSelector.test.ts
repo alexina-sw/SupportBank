@@ -7,7 +7,7 @@ const TRANSACTION_DIRECTORY = "tests/fixtures/transaction-files";
 const normalizePath = (path: string): string => path.replaceAll("\\", "/");
 
 describe("selectTransactionFiles", () => {
-    test("selects all CSV files alphabetically", () => {
+    test("selects all supported files alphabetically", () => {
         const files = selectTransactionFiles(
             TRANSACTION_DIRECTORY,
             { type: "all" }
@@ -17,20 +17,20 @@ describe("selectTransactionFiles", () => {
             files.map((file) => file.filename)
         ).toEqual([
             "DodgyTransactions2015.csv",
+            "Transactions2013.json",
             "Transactions2014.csv"
         ]);
 
         expect(
             files.map((file) => normalizePath(file.path))
         ).toEqual([
-            "tests/fixtures/transaction-files/" +
-                "DodgyTransactions2015.csv",
-            "tests/fixtures/transaction-files/" +
-                "Transactions2014.csv"
+            "tests/fixtures/transaction-files/DodgyTransactions2015.csv",
+            "tests/fixtures/transaction-files/Transactions2013.json",
+            "tests/fixtures/transaction-files/Transactions2014.csv"
         ]);
     });
 
-    test("ignores non-CSV files and directories", () => {
+    test("ignores unsupported files and directories", () => {
         const files = selectTransactionFiles(
             TRANSACTION_DIRECTORY,
             { type: "all" }
@@ -55,14 +55,29 @@ describe("selectTransactionFiles", () => {
         );
 
         expect(files).toHaveLength(1);
-        expect(files[0]?.filename).toBe(
-            "Transactions2014.csv"
-        );
+        expect(files[0]?.filename).toBe("Transactions2014.csv");
         expect(
             normalizePath(files[0]?.path ?? "")
         ).toBe(
-            "tests/fixtures/transaction-files/" +
-                "Transactions2014.csv"
+            "tests/fixtures/transaction-files/Transactions2014.csv"
+        );
+    });
+
+    test("selects one existing JSON file", () => {
+        const files = selectTransactionFiles(
+            TRANSACTION_DIRECTORY,
+            {
+                type: "file",
+                filename: "Transactions2013.json"
+            }
+        );
+
+        expect(files).toHaveLength(1);
+        expect(files[0]?.filename).toBe("Transactions2013.json");
+        expect(
+            normalizePath(files[0]?.path ?? "")
+        ).toBe(
+            "tests/fixtures/transaction-files/Transactions2013.json"
         );
     });
 
@@ -101,7 +116,7 @@ describe("selectTransactionFiles", () => {
         "/private.csv",
         "nested/transactions.csv",
         "nested\\transactions.csv",
-        "transactions.json"
+        "transactions.txt"
     ])("rejects the invalid filename: %s", (filename) => {
         expect(() =>
             selectTransactionFiles(

@@ -3,6 +3,14 @@ import { basename, extname, isAbsolute, join } from "node:path";
 
 import type { ImportSelection } from "../cli/ImportPrompt.js";
 
+const SUPPORTED_EXTENSIONS = new Set([
+    ".csv",
+    ".json"
+]);
+
+const isSupportedFile = (filename: string): boolean =>
+    SUPPORTED_EXTENSIONS.has(extname(filename).toLowerCase());
+
 export interface TransactionFile {
     readonly filename: string;
     readonly path: string;
@@ -15,14 +23,16 @@ export function selectTransactionFiles(directory: string, selection: ImportSelec
         })
             .filter((entry) =>
                 entry.isFile() &&
-                extname(entry.name).toLowerCase() === ".csv"
+                isSupportedFile(entry.name)
             )
             .map((entry) => ({
                 filename: entry.name,
                 path: join(directory, entry.name)
             }))
             .sort((first, second) =>
-                first.filename.localeCompare(second.filename)
+                first.filename.localeCompare(
+                    second.filename
+                )
             );
     }
 
@@ -31,7 +41,7 @@ export function selectTransactionFiles(directory: string, selection: ImportSelec
         isAbsolute(selection.filename) ||
         /[\\/]/.test(selection.filename) ||
         basename(selection.filename) !== selection.filename ||
-        extname(selection.filename).toLowerCase() !== ".csv"
+        !isSupportedFile(selection.filename)
     ) {
         throw new Error(`"${selection.filename}" is not a valid transaction filename.`);
     }

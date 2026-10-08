@@ -5,7 +5,7 @@ import { CommandProcessor } from "./cli/CommandProcessor.js";
 import { promptForImport } from "./cli/ImportPrompt.js";
 import { getLogger } from "./logger.js";
 import { TransactionImportValidationError } from "./services/TransactionImportValidationError.js";
-import { CsvTransactionReader } from "./services/CsvTransactionReader.js";
+import { createTransactionReader } from "./services/TransactionReaderFactory.js";
 import { SupportBank } from "./services/SupportBank.js";
 import { selectTransactionFiles, type TransactionFile } from "./services/TransactionFileSelector.js";
 
@@ -58,7 +58,7 @@ function getTransactionFilesFromPrompt(): TransactionFile[] {
             );
 
             if (files.length === 0) {
-                console.log("No CSV transaction files were found.");
+                console.log("No transaction files were found.");
                 continue;
             }
 
@@ -78,18 +78,18 @@ function main(): void {
     logger.info("SupportBank started");
 
     const transactionFiles = getTransactionFilesFromPrompt();
-    const reader = new CsvTransactionReader();
     const bank = new SupportBank();
 
     for (const file of transactionFiles) {
         logger.info(`Import started: file=${file.filename}`);
 
         try {
+            const reader = createTransactionReader(file.filename);
             const transactions = reader.read(file.path);
 
             bank.recordTransactions(transactions);
 
-            console.log(`${file.filename} was imported successfully: (${transactions.length} transactions).`);
+            console.log(`${file.filename} was imported successfully (${transactions.length} transactions).`);
             console.log("");
 
             logger.info(`Import completed: file=${file.filename} imported=${transactions.length}`);

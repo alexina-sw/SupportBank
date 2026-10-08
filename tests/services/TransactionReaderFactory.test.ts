@@ -1,0 +1,41 @@
+import { describe, expect, test } from "vitest";
+
+import { CsvTransactionReader } from "../../src/services/CsvTransactionReader.js";
+import { JsonTransactionReader } from "../../src/services/JsonTransactionReader.js";
+import { createTransactionReader } from "../../src/services/TransactionReaderFactory.js";
+
+describe("createTransactionReader", () => {
+    test("creates a CSV reader", () => {
+        expect(
+            createTransactionReader("Transactions2014.csv")
+        ).toBeInstanceOf(CsvTransactionReader);
+    });
+
+    test("creates a JSON reader", () => {
+        expect(
+            createTransactionReader("Transactions2013.json")
+        ).toBeInstanceOf(JsonTransactionReader);
+    });
+
+    test("matches extensions case-insensitively",
+        () => {
+            expect(
+                createTransactionReader("Transactions2014.CSV")
+            ).toBeInstanceOf(
+                CsvTransactionReader
+            );
+
+            expect(
+                createTransactionReader("Transactions2013.JSON")
+            ).toBeInstanceOf(
+                JsonTransactionReader
+            );
+        }
+    );
+
+    test("rejects an unsupported file type", () => {
+        expect(() =>
+            createTransactionReader("Transactions.txt")
+        ).toThrow("Unsupported transaction file type");
+    });
+});
