@@ -32,16 +32,14 @@ describe("SupportBank", () => {
     });
 
     describe("findAccount", () => {
-        test(
-            "returns undefined without creating a missing account",
+        test("returns undefined without creating a missing account",
             ({ bank }) => {
                 expect(bank.findAccount("Jon A")).toBeUndefined();
                 expect(bank.getAccounts()).toEqual([]);
             }
         );
 
-        test(
-            "returns an existing account",
+        test("returns an existing account",
             ({ bank }) => {
                 const account = bank.getAccount("Jon A");
 
@@ -51,8 +49,7 @@ describe("SupportBank", () => {
     });
 
     describe("getAccount", () => {
-        test(
-            "creates and returns a missing account",
+        test("creates and returns a missing account",
             ({ bank }) => {
                 const account = bank.getAccount("Jon A");
 
@@ -61,8 +58,7 @@ describe("SupportBank", () => {
             }
         );
 
-        test(
-            "returns an existing account",
+        test("returns an existing account",
             ({ bank }) => {
                 const first = bank.getAccount("Jon A");
                 const second = bank.getAccount("Jon A");
@@ -74,8 +70,7 @@ describe("SupportBank", () => {
     });
 
     describe("recordTransaction", () => {
-        test(
-            "records a transaction for both accounts",
+        test("records a transaction for both accounts",
             ({ bank, lunchTransaction }) => {
                 bank.recordTransaction(lunchTransaction);
 
@@ -102,8 +97,7 @@ describe("SupportBank", () => {
     });
 
     describe("recordTransactions", () => {
-        test(
-            "reuses accounts across multiple transactions",
+        test("reuses accounts across multiple transactions",
             ({
                 bank,
                 lunchTransaction,

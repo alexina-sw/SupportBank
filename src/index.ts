@@ -1,43 +1,41 @@
 import readlineSync from "readline-sync";
+import { fileURLToPath } from "node:url";
 
 import { CommandProcessor } from "./cli/CommandProcessor.js";
+import { promptForImport } from "./cli/ImportPrompt.js";
 import { getLogger } from "./logger.js";
-import { CsvImportValidationError } from "./services/CsvTransactionReaderErrors.js";
-import { CsvTransactionReader } from "./services/CsvTransactionReader.js";
 import { SupportBank } from "./services/SupportBank.js";
+import { TransactionImporter } from "./services/import/TransactionImporter.js";
+import { selectTransactionFiles, type TransactionFile } from "./services/import/TransactionFileSelector.js";
+import { TransactionImportValidationError } from "./services/import/validation/TransactionImportValidationError.js";
 
 const logger = getLogger("index");
 
-const TRANSACTION_FILE = "DodgyTransactions2015.csv";
+const TRANSACTION_DIRECTORY = fileURLToPath(
+    new URL("../transactions", import.meta.url)
+);
 
 function handleImportFailure(error: unknown, filePath: string): void {
-    if (error instanceof CsvImportValidationError) {
+    if (error instanceof TransactionImportValidationError) {
         console.error(`Could not import ${filePath}.`);
         console.error("");
 
         for (const issue of error.issues) {
-            console.error(
-                `Line ${issue.line}, ${issue.field}: ${issue.message}`
-            );
+            console.error(`${issue.location}, ${issue.field}: ${issue.message}`);
         }
 
         console.error("");
-        console.error(
-            "No transactions were imported. Correct the file and try again."
-        );
+        console.error("No transactions were imported. Correct the file and try again.");
+        console.error("");
 
-        logger.warn(
-            `Import rejected: file=${filePath} issues=${error.issues.length} imported=0`
-        );
+        logger.warn(`Import rejected: file=${filePath} issues=${error.issues.length} imported=0`);
     } else {
         const message =
             error instanceof Error
                 ? error.message
                 : "Unknown import error";
 
-        console.error(
-            `Could not read or parse ${filePath}: ${message}`
-        );
+        console.error(`Could not read or parse ${filePath}: ${message}`);
         console.error("No transactions were imported.");
 
         logger.error(
@@ -49,23 +47,53 @@ function handleImportFailure(error: unknown, filePath: string): void {
     process.exitCode = 1;
 }
 
+function getTransactionFilesFromPrompt(): TransactionFile[] {
+    while (true) {
+        const selection = promptForImport();
+
+        try {
+            const files = selectTransactionFiles(
+                TRANSACTION_DIRECTORY,
+                selection
+            );
+
+            if (files.length === 0) {
+                console.log("No transaction files were found.");
+                continue;
+            }
+
+            return files;
+        } catch (error) {
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : "Could not select transaction files.";
+
+            console.error(message);
+        }
+    }
+}
+
 function main(): void {
     logger.info("SupportBank started");
-    logger.info(`Import started: file=${TRANSACTION_FILE}`);
 
-    const reader = new CsvTransactionReader();
-    let bank: SupportBank;
+    const transactionFiles = getTransactionFilesFromPrompt();
+    const bank = new SupportBank();
+    const importer = new TransactionImporter(bank);
 
-    try {
-        const transactions = reader.read(TRANSACTION_FILE);
+    for (const file of transactionFiles) {
+        logger.info(`Import started: file=${file.filename}`);
 
-        bank = new SupportBank();
-        bank.recordTransactions(transactions);
+        try {
+            const result = importer.import(file);
 
-        logger.info(`Import completed: file=${TRANSACTION_FILE} imported=${transactions.length}`);
-    } catch (error) {
-        handleImportFailure(error, TRANSACTION_FILE);
-        return;
+            console.log(`${result.filename} was imported successfully (${result.importedCount} transactions).`);
+            console.log("");
+
+            logger.info(`Import completed: file=${result.filename} imported=${result.importedCount}`);
+        } catch (error) {
+            handleImportFailure(error, file.filename);
+        }
     }
 
     const processor = new CommandProcessor(bank);
