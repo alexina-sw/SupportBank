@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import { CsvTransactionReader } from "../../src/services/CsvTransactionReader.js";
 import { JsonTransactionReader } from "../../src/services/JsonTransactionReader.js";
 import { createTransactionReader } from "../../src/services/TransactionReaderFactory.js";
+import { XmlTransactionReader } from "../../src/services/XmlTransactionReader.js";
 
 describe("createTransactionReader", () => {
     test("creates a CSV reader", () => {
@@ -15,6 +16,12 @@ describe("createTransactionReader", () => {
         expect(
             createTransactionReader("Transactions2013.json")
         ).toBeInstanceOf(JsonTransactionReader);
+    });
+
+    test("creates a XML reader", () => {
+        expect(
+            createTransactionReader("Transactions2012.xml")
+        ).toBeInstanceOf(XmlTransactionReader);
     });
 
     test("matches extensions case-insensitively",

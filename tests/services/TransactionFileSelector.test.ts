@@ -17,6 +17,7 @@ describe("selectTransactionFiles", () => {
             files.map((file) => file.filename)
         ).toEqual([
             "DodgyTransactions2015.csv",
+            "Transactions2012.xml",
             "Transactions2013.json",
             "Transactions2014.csv"
         ]);
@@ -25,6 +26,7 @@ describe("selectTransactionFiles", () => {
             files.map((file) => normalizePath(file.path))
         ).toEqual([
             "tests/fixtures/transaction-files/DodgyTransactions2015.csv",
+            "tests/fixtures/transaction-files/Transactions2012.xml",
             "tests/fixtures/transaction-files/Transactions2013.json",
             "tests/fixtures/transaction-files/Transactions2014.csv"
         ]);
@@ -78,6 +80,24 @@ describe("selectTransactionFiles", () => {
             normalizePath(files[0]?.path ?? "")
         ).toBe(
             "tests/fixtures/transaction-files/Transactions2013.json"
+        );
+    });
+
+    test("selects one existing XML file", () => {
+        const files = selectTransactionFiles(
+            TRANSACTION_DIRECTORY,
+            {
+                type: "file",
+                filename: "Transactions2012.xml"
+            }
+        );
+
+        expect(files).toHaveLength(1);
+        expect(files[0]?.filename).toBe("Transactions2012.xml");
+        expect(
+            normalizePath(files[0]?.path ?? "")
+        ).toBe(
+            "tests/fixtures/transaction-files/Transactions2012.xml"
         );
     });
 

@@ -5,7 +5,8 @@ import type { ImportSelection } from "../cli/ImportPrompt.js";
 
 const SUPPORTED_EXTENSIONS = new Set([
     ".csv",
-    ".json"
+    ".json",
+    ".xml"
 ]);
 
 const isSupportedFile = (filename: string): boolean =>
