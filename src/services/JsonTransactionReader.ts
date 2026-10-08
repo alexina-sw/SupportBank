@@ -5,25 +5,52 @@ import { parseISO } from "date-fns";
 import { Transaction } from "../modules/Transaction.js";
 import type { TransactionReader } from "./TransactionReader.js";
 import { TransactionValidator, type TransactionInput } from "./TransactionValidator.js";
+import { TransactionImportValidationError } from "./TransactionImportValidationError.js";
 
 type JsonObject = Record<string, unknown>;
 
-const asObject = (value: unknown): JsonObject =>
-    typeof value === "object" &&
-    value !== null &&
-    !Array.isArray(value)
-        ? value as JsonObject
-        : {};
+function isJsonObject(value: unknown): value is JsonObject {
+    return (
+        typeof value === "object" &&
+        value !== null &&
+        !Array.isArray(value)
+    );
+}
+
+function requireJsonObject(value: unknown, index: number): JsonObject {
+    if (!isJsonObject(value)) {
+        throw new TransactionImportValidationError([
+            {
+                location: `Item ${index + 1}`,
+                field: "Transaction",
+                message: "Transaction must be a JSON object"
+            }
+        ]);
+    }
+
+    return value;
+}
 
 const asText = (value: unknown): string =>
     typeof value === "string"
         ? value.trim()
         : "";
 
-const displayValue = (value: unknown): string =>
-    value === undefined || value === null
-        ? ""
-        : String(value);
+function displayValue(value: unknown): string {
+    if (value === undefined || value === null) {
+        return "";
+    }
+
+    if (
+        typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean"
+    ) {
+        return value.toString();
+    }
+
+    return JSON.stringify(value) as string;
+}
 
 export class JsonTransactionReader implements TransactionReader {
     private readonly validator = new TransactionValidator();
@@ -52,7 +79,8 @@ export class JsonTransactionReader implements TransactionReader {
     }
 
     private createInput(item: unknown, index: number): TransactionInput {
-        const row = asObject(item);
+        const row = requireJsonObject(item, index);
+
         const dateText = displayValue(row.Date);
         const amountText = displayValue(row.Amount);
 
