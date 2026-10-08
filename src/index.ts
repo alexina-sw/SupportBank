@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { CommandProcessor } from "./cli/CommandProcessor.js";
 import { promptForImport } from "./cli/ImportPrompt.js";
 import { getLogger } from "./logger.js";
-import { CsvImportValidationError } from "./services/CsvTransactionReaderErrors.js";
+import { TransactionImportValidationError } from "./services/TransactionImportValidationError.js";
 import { CsvTransactionReader } from "./services/CsvTransactionReader.js";
 import { SupportBank } from "./services/SupportBank.js";
 import { selectTransactionFiles, type TransactionFile } from "./services/TransactionFileSelector.js";
@@ -16,14 +16,12 @@ const TRANSACTION_DIRECTORY = fileURLToPath(
 );
 
 function handleImportFailure(error: unknown, filePath: string): void {
-    if (error instanceof CsvImportValidationError) {
+    if (error instanceof TransactionImportValidationError) {
         console.error(`Could not import ${filePath}.`);
         console.error("");
 
         for (const issue of error.issues) {
-            console.error(
-                `Line ${issue.line}, ${issue.field}: ${issue.message}`
-            );
+            console.error(`${issue.location}, ${issue.field}: ${issue.message}`);
         }
 
         console.error("");

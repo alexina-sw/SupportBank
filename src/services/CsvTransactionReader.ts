@@ -1,10 +1,11 @@
 import { readFileSync } from "node:fs";
 
 import { parse as parseCsv, type InfoRecord } from "csv-parse/sync";
-import { isValid, parse as parseDate } from "date-fns";
+import { parse as parseDate } from "date-fns";
 
 import { Transaction } from "../modules/Transaction.js";
-import { CsvImportValidationError } from "./CsvTransactionReaderErrors.js";
+import type { TransactionReader } from "./TransactionReader.js";
+import { TransactionValidator, type TransactionInput } from "./TransactionValidator.js";
 
 interface CsvTransactionRow {
     Date: string;
@@ -13,19 +14,15 @@ interface CsvTransactionRow {
     Narrative: string;
     Amount: string;
 }
- 
-export interface CsvImportValidationIssue {
-    readonly line: number;
-    readonly field: string;
-    readonly message: string;
-}
 
 interface ParsedCsvTransactionRow {
     readonly record: CsvTransactionRow;
     readonly info: InfoRecord;
 }
 
-export class CsvTransactionReader {
+export class CsvTransactionReader implements TransactionReader {
+    private readonly validator = new TransactionValidator();
+
     parse(csvText: string): Transaction[] {
         const rows = parseCsv<
             ParsedCsvTransactionRow,
@@ -37,17 +34,11 @@ export class CsvTransactionReader {
             trim: true
         });
 
-        const issues = rows.flatMap(({ record, info }) =>
-            this.validateRow(record, info.lines)
+        const inputs = rows.map(({ record, info }) =>
+            this.createInput(record, info.lines)
         );
 
-        if (issues.length > 0) {
-            throw new CsvImportValidationError(issues);
-        }
-
-        return rows.map(({ record }) => 
-            this.createTransaction(record)
-        );
+        return this.validator.createTransactions(inputs);
     }
 
     read(filePath: string): Transaction[] {
@@ -56,66 +47,16 @@ export class CsvTransactionReader {
         return this.parse(csvText);
     }
 
-    private createTransaction(row: CsvTransactionRow): Transaction {
-        const date = parseDate(row.Date, "dd/MM/yyyy", new Date());
-        const amount = Number(row.Amount);
-        
-        return new Transaction(date, row.From, row.To, row.Narrative, amount);
-    }
-
-    private validateRow(row: CsvTransactionRow, rowNumber: number): CsvImportValidationIssue[] {
-        const issues: CsvImportValidationIssue[] = [];
-        const date = parseDate(row.Date, "dd/MM/yyyy", new Date());
-        const amount = Number(row.Amount);
-
-        if (!row.From) {
-            issues.push({
-                line: rowNumber,
-                field: "From",
-                message: "Sender is required"
-            });
-        }
-
-        if (!row.To) {
-            issues.push({
-                line: rowNumber,
-                field: "To",
-                message: "Recipient is required"
-            });
-        }
-
-        if (row.From && row.To && row.From === row.To) {
-            issues.push({
-                line: rowNumber,
-                field: "From/To",
-                message: "Sender and recipient must be different"
-            });
-        }
-
-        if (!row.Narrative) {
-            issues.push({
-                line: rowNumber,
-                field: "Narrative",
-                message: "Narrative is required"
-            });
-        }
-
-        if (!isValid(date)) {
-            issues.push({
-                line: rowNumber,
-                field: "Date",
-                message: `"${row.Date}" is not a valid date`
-            });
-        }
-
-        if (row.Amount === "" || !Number.isFinite(amount) || amount < 0) {
-            issues.push({
-                line: rowNumber,
-                field: "Amount",
-                message: `"${row.Amount}" is not a valid amount`
-            });
-        }
-
-        return issues;
+    private createInput(row: CsvTransactionRow, rowNumber: number): TransactionInput {
+        return {
+            date: parseDate(row.Date, "dd/MM/yyyy", new Date()),
+            dateText: row.Date,
+            from: row.From,
+            to: row.To,
+            narrative: row.Narrative,
+            amount: row.Amount === "" ? Number.NaN : Number(row.Amount),
+            amountText: row.Amount,
+            location: `Line ${rowNumber}`
+        };
     }
 }
