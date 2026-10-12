@@ -7,7 +7,7 @@ import { XmlTransactionReader } from "./readers/XmlTransactionReader.js";
 
 type TransactionReaderConstructor = new () => TransactionReader;
 
-const readerTypes: ReadonlyMap<string, TransactionReaderConstructor> = new Map([
+const readerTypes: ReadonlyMap<string, TransactionReaderConstructor> = new Map<string, TransactionReaderConstructor>([
     [".csv", CsvTransactionReader],
     [".json", JsonTransactionReader],
     [".xml", XmlTransactionReader]

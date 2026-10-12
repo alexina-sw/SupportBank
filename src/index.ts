@@ -17,16 +17,13 @@ const TRANSACTION_DIRECTORY = fileURLToPath(
 
 function handleImportFailure(error: unknown, filePath: string): void {
     if (error instanceof TransactionImportValidationError) {
-        console.error(`Could not import ${filePath}.`);
-        console.error("");
+        console.error(`Could not import ${filePath}`);
 
         for (const issue of error.issues) {
             console.error(`${issue.location}, ${issue.field}: ${issue.message}`);
         }
 
-        console.error("");
-        console.error("No transactions were imported. Correct the file and try again.");
-        console.error("");
+        console.error("No transactions were imported. Correct the file and try again.\n");
 
         logger.warn(`Import rejected: file=${filePath} issues=${error.issues.length} imported=0`);
     } else {
@@ -88,7 +85,6 @@ function main(): void {
             const result = importer.import(file);
 
             console.log(`${result.filename} was imported successfully (${result.importedCount} transactions).`);
-            console.log("");
 
             logger.info(`Import completed: file=${result.filename} imported=${result.importedCount}`);
         } catch (error) {
@@ -98,7 +94,7 @@ function main(): void {
 
     const processor = new CommandProcessor(bank);
 
-    console.log('Commands: "List All", "List <account>", or "Exit".');
+    console.log(`\nCommands: "List All", "List <account>", or "Exit".`);
 
     while (true) {
         const command = readlineSync.question("> ");
